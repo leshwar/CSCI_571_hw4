@@ -1,0 +1,118 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>HW4</title>
+        <script type="application/javascript">
+            /* Javascript Code starts here */ 
+            function getDataAsync (urlPassed) {
+                try {
+                    var responseText;
+                    var request = new XMLHttpRequest();
+                    request.open('GET', urlPassed, false);  //'False' makes the request synchronous
+                    request.send(null);
+                    //JSON File exists.
+                    if(request.status === 200) {
+                        responseText = request.responseText;
+                        console.log(request.responseText);
+                    }
+                    //Handling the error where JSON File doesn't exist.
+                    if(request.status === 404) {
+                        alert("JSON File Not Found!!! Try Again");
+                    }
+                    return responseText;
+                }
+                catch (error) {
+                    alert("File Name not found");
+                }
+            }
+
+            function jsonParser () {
+                var urlPassed = document.getElementById('urlPassed').value;
+                urlPassed = urlPassed.trim()
+                //Checking for Not Entering File Name
+                if(urlPassed == '') {
+                    alert('No File Name entered!!! Please Enter a Valid Name');
+                }
+                var  jsonResponse = getDataAsync(urlPassed);
+                //Checking if Data is Present in the JSON File
+                if(jsonResponse == '') {
+                    alert('No data found in the Json File!!!');
+                    exit;
+                }
+                var jsonParsed = JSON.parse(jsonResponse);
+                console.log(jsonParsed);
+                
+                var headers = jsonParsed.Mainline.Table.Header.Data;
+                //Cars Data is not Present.
+                if(!jsonParsed.Mainline.Table.Row) {
+                    alert('No Cars data found in the Json File!!!');
+                    exit;
+                }
+                //Cars Header is Present but no values in them.
+                var tableRows = jsonParsed.Mainline.Table.Row;
+                if(tableRows.length == 0) {
+                    alert('No Cars data found in the Json File!!!');
+                    exit;   
+                }
+
+                var tableData = "<html> <head> <style> table, th, td { border: 1px solid black; } </style> </head> <body>"
+                tableData += '<table style = "width: 100%; border: 1px solid black;">';   
+                
+                //Processing Table Headers:
+                headers.forEach(element => {
+                    tableData += '<th>' +element+ '</th>';
+                });
+
+                //Processing Rows:
+                for(i = 0; i < tableRows.length; i++) {
+                    var rowData = tableRows[i];
+                    tableData += '<tr>';
+                    tableData += '<td>' + rowData.Rank + '</td>';
+                    tableData += '<td>' + rowData.Group + '</td>';
+                    var hubData = '<ul>'
+                    for(j = 0; j < rowData.Hubs.Hub.length; j++) {
+                        if(j == 0) {
+                            if (!rowData.Hubs.Hub[j].trim() == "") {
+                                hubData += '<li><b>' + rowData.Hubs.Hub[j] + '</b></li>';
+                            }
+                        }
+                        else {
+                            if (!rowData.Hubs.Hub[j].trim() == "") {
+                                hubData += '<li>' + rowData.Hubs.Hub[j] + '</li>';
+                            }
+                        }   
+                    }
+                    hubData += '</ul>'
+                    tableData += '<td>' + hubData + '</td>';
+                    tableData += '<td>' + rowData.Vehicles + '</td>';
+                    tableData += '<td> <a href="' + rowData.HomePage + '">' + rowData.HomePage + '</a></td>';
+                    var imageData = rowData.Logo //.replace("http://csci571.com/hw/hw4/","");
+                    if(imageData == undefined) {
+                        imageData = "";
+                    }
+                    tableData += '<td><img src = "' + imageData + '" width = "200" height = "200"></td>';
+                    tableData += '</tr>';
+                }
+
+                tableData += '</table></bo' + 'dy></html>';
+
+                var new_page = window.open(" ","Cars List","height = 800, width = 3000");
+                new_page.document.write(tableData);
+                new_page.document.close();
+            }
+        </script>
+    </head>
+    <body>
+        <div class = "container" style = "padding: 162px 413px;">
+            <h3>Enter URL for largest manufacturers by production (2017) List JSON File</h3> <br>
+            <form>
+                <div class = "form" style = "padding: 4px 199px;">
+                    <input type = "text" id = "urlPassed" style = "width: 200px;" ><br><br>
+                </div>
+                <div class = "submit_button" style = "padding: 1px 248px;">
+                    <button onclick = "jsonParser()" style = "padding: -1px 50px;">Submit Query</button><br>
+                </div>        
+            </form>
+        </div>
+    </body>
+</html>
